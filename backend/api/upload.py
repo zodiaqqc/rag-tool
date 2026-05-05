@@ -1,6 +1,8 @@
 from fastapi import APIRouter, UploadFile, File
 from backend.services.file_parser import txt_parser, pdf_parser, docx_parser
 from backend.services.chunker import chunk_text
+from backend.services.embeddings import get_embeddings
+from backend.services.vector_store import add_chunks
 
 router = APIRouter()
 
@@ -20,12 +22,19 @@ async def upload(file: UploadFile = File(...)):
         text = docx_parser(content)
     
     else:
-        return {"error": "unsupported file type"}
+        return {"error": "Unsupported file type"}
     
     chunks = chunk_text(text)
+    
+    embeddings = [get_embeddings(chunk) for chunk in chunks]
+    
+    add_chunks(chunks, embeddings)
     
     return {
         "filename": file.filename,
         "text_preview": text[:500],
-        "first_chunk": chunks[0] if chunks else ""
+        "first_chunk": chunks[0] if chunks else "",
+        "chunks": len(chunks),
+        "stored": True
     }
+    
