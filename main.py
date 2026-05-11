@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from backend.api.upload import router as upload_router
 import uvicorn
 
+
+
 app = FastAPI()
 
 app.include_router(upload_router)
